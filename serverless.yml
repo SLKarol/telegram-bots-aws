@@ -1,0 +1,89 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: short-bot
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+useDotenv: true
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+  stage: prod
+  region: eu-west-1
+
+  apiGateway:
+    shouldStartNameWithService: true
+  lambdaHashingVersion: "20201221"
+
+functions:
+  # Веб-хук бота Animals
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: webhook
+          method: post
+          cors: true
+  # Установка веб-хуков
+  set-webhook:
+    handler: handler.setWebhook
+    events:
+      - http:
+          path: setWebhook
+          method: post
+          cors: true
+  # По прошествии трёх минут запуск и проверка подписок
+  afet-timeout:
+    handler: handler.afterTimeout
+    events:
+      - http:
+          path: afterTimeout
+          method: post
+          cors: true
+      - schedule: rate(3 minutes)
+  # Пятница
+  friday-hook:
+    handler: handler.fridayHook
+    events:
+      - http:
+          path: webhookFriday
+          method: post
+          cors: true
+  # Каждый день в шесть утра запустить рассылку nsfw
+  send-friday:
+    handler: handler.sendFriday
+    events:
+      - http:
+          path: sendFriday
+          method: post
+          cors: true
+      # Запускать эту функцию каждый день в 6 утра (время местное у сервера)
+      - schedule: cron(0 6 * * ? *)
+  #Цитаты
+  quotes:
+    handler: handler.quotes
+    events:
+      - http:
+          path: quotes
+          method: post
+          cors: true
