@@ -15,15 +15,22 @@
 Для работы нужно подготовить файл .env c такими значениями:
 
 TELEGRAM_TOKEN="Токен бота для animal.js"
+
 TELEGRAM_TOKEN_FRIDAY="Токен бота для friday.js"
+
 TELEGRAM_TOKEN_QUOTES_FATHERS="Токен бота для quotes.js"
+
 REDDIT_USER_NAME="RedditUserName"
+
 REDDIT_PASSWORD="RedditPassword"
+
 REDDIT_APP_ID="RedditAppId"
+
 REDDIT_API_SECRET="RedditApiSecret"
+
 MONGO_CONNECT_URI="MongoConnectUri"
 
-REDDIT\_...настройки для подключения к Reddit и MONGO_CONNECT_URI - подключение к БД Mongo для хранения настроек подписки.
+Здесь REDDIT\_...настройки для подключения к Reddit и MONGO_CONNECT_URI - подключение к БД Mongo для хранения настроек подписки.
 
 ## AWS
 
