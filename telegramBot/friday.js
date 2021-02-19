@@ -19,10 +19,15 @@ const optionsUpdate = {
   upsert: true,
   setDefaultsOnInsert: true,
 };
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN_FRIDAY, {
-  webhookReply: process.env.NODE_ENV !== "development",
-  telegram: { webhookReply: process.env.NODE_ENV !== "development" },
-});
+const bot = new Telegraf(
+  process.env.NODE_ENV !== "development"
+    ? process.env.TELEGRAM_TOKEN_FRIDAY
+    : process.env.TELEGRAM_TOKEN_DEV,
+  {
+    webhookReply: process.env.NODE_ENV !== "development",
+    telegram: { webhookReply: process.env.NODE_ENV !== "development" },
+  }
+);
 bot.catch((err, ctx) => {
   console.log(`Ooops, encountered an error for ${ctx.updateType}`, err);
 });
@@ -34,7 +39,7 @@ bot.use(commandParts);
 bot.on("message", async (ctx) => {
   const {
     state: {
-      command: { text = "", command = "" },
+      command: { text = "", command = "", args = "" },
     },
   } = ctx;
   const chatId = ctx.message.chat.id;
@@ -43,7 +48,7 @@ bot.on("message", async (ctx) => {
   //--- Пятничная рассылка
   if (command === "friday") {
     const todayFriday = await isFriDay();
-    return friday({ todayFriday, telegram: ctx.telegram, chatId });
+    return friday({ todayFriday, telegram: ctx.telegram, chatId, group: args });
   }
   //--- Подписка на пятницу
   if (command === "subscribe") {
