@@ -43,7 +43,6 @@ bot.on("message", async (ctx) => {
     },
   } = ctx;
   const chatId = ctx.message.chat.id;
-
   // Обработка команды боту
   //--- Пятничная рассылка
   if (command === "friday") {

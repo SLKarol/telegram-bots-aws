@@ -8,32 +8,28 @@ const { delay } = require("../lib/common");
  * @param {boolean} prop.todayFriday
  * @param {number} prop.chatId
  */
-const friday = async ({ telegram, chatId, group }) => {
+const friday = async ({ telegram, chatId }) => {
   // Надпись
   await telegram.sendMessage(
     chatId,
     "Готовятся материалы для публикации в этом чате."
   );
-  const photoGroup = group === "group";
-  // const photoGroup = true;
 
   /**
    * Собранные выпуски.
    * Когда не-пятница, их вдвое меньше.
    */
-  const friDay = await getNewRecords(30);
+  const friDay = await getNewRecords(20);
 
   //массив, в который будет выведен результат.
   let fridayMessages = [];
-  if (photoGroup) {
-    const size = 10;
-    // Получить массив из частей по size штук
-    for (let i = 0; i < Math.ceil(friDay.length / size); i++) {
-      fridayMessages[i] = friDay
-        .slice(i * size, i * size + size)
-        // Подготовить эти 10 записей к отправке в телеграм
-        .map(mapRedditForTelegram);
-    }
+  const size = 10;
+  // Получить массив из частей по size штук
+  for (let i = 0; i < Math.ceil(friDay.length / size); i++) {
+    fridayMessages[i] = friDay
+      .slice(i * size, i * size + size)
+      // Подготовить эти 10 записей к отправке в телеграм
+      .map(mapRedditForTelegram);
   }
   //--- Примеры отправки сообщения не через библиотеку
   // 1 example
@@ -67,42 +63,40 @@ const friday = async ({ telegram, chatId, group }) => {
   //     console.error(e);
   //   }
   // }
-  // Отправить фото сгруппированными?
-  if (photoGroup) {
-    for (group of fridayMessages) {
-      await delay();
-      if (group.length > 1) {
-        try {
-          await telegram.sendMediaGroup(chatId, group, {
-            disable_notification: true,
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        const [photo] = group;
-        telegram.sendPhoto(
-          chatId,
-          { url: photo.url },
-          { caption: photo.title, disable_notification: true }
-        );
-      }
-    }
-  } else {
-    // Отправить по одной фото?
-    for (photo of friDay) {
+  // Отправить фото сгруппированными
+  for (group of fridayMessages) {
+    if (group.length > 1) {
       try {
-        await telegram.sendPhoto(
-          chatId,
-          { url: photo.url },
-          { caption: photo.title, disable_notification: true }
-        );
-        await delay(1234);
+        await telegram.sendMediaGroup(chatId, group, {
+          disable_notification: true,
+        });
       } catch (e) {
         console.error(e);
       }
+    } else {
+      const [photo] = group;
+      telegram.sendPhoto(
+        chatId,
+        { url: photo.url },
+        { caption: photo.title, disable_notification: true }
+      );
     }
+    await delay();
   }
+  // Отправить по одной фото
+  // for (photo of friDay) {
+  //   try {
+  //     await telegram.sendPhoto(chatId, {
+  //       source: photo.content,
+  //       caption: photo.title,
+  //       disable_notification: true,
+  //     });
+  //     await delay(1234);
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }
+
   telegram.sendMessage(chatId, "Задача выполнена.");
 };
 
