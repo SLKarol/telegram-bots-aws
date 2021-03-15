@@ -1,70 +1,21 @@
-const { getNewRecords, mapRedditForTelegram } = require("../lib/reddit");
+const getFridayContent = require("../lib/reddit");
 const { delay } = require("../lib/common");
 
 /**
  * Вывести все данные для пятничного выпуска
  * @param {Object} prop
  * @param {TelegrafContext} prop.telegram
- * @param {boolean} prop.todayFriday
  * @param {number} prop.chatId
  */
 const friday = async ({ telegram, chatId }) => {
-  // Надпись
   await telegram.sendMessage(
     chatId,
     "Готовятся материалы для публикации в этом чате."
   );
-
-  /**
-   * Собранные выпуски.
-   * Когда не-пятница, их вдвое меньше.
-   */
-  const friDay = await getNewRecords(20);
-
-  //массив, в который будет выведен результат.
-  let fridayMessages = [];
-  const size = 10;
-  // Получить массив из частей по size штук
-  for (let i = 0; i < Math.ceil(friDay.length / size); i++) {
-    fridayMessages[i] = friDay
-      .slice(i * size, i * size + size)
-      // Подготовить эти 10 записей к отправке в телеграм
-      .map(mapRedditForTelegram);
-  }
-  //--- Примеры отправки сообщения не через библиотеку
-  // 1 example
-  // let url = new URL(
-  //   `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN_FRIDAY}/sendMediaGroup`
-  // );
-  // const params = { chat_id: chatId };
-  // for (group of fridayMessages) {
-  //   params.media = JSON.stringify(group);
-  //   url.search = new URLSearchParams(params).toString();
-  //   try {
-  //     await fetch(url);
-  //     await delay();
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
-  // 2 example
-  // let url = new URL(
-  //   `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN_FRIDAY}/sendPhoto`
-  // );
-  // const params = { chat_id: chatId, disable_notification: true };
-  // for (photo of friDay) {
-  //   params.photo = photo.url;
-  //   params.caption = photo.title;
-  //   url.search = new URLSearchParams(params).toString();
-  //   try {
-  //     await fetch(url);
-  //     await delay();
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
-  // Отправить фото сгруппированными
+  // Получить массив сообщений для пятничного контента
+  const fridayMessages = await getFridayContent();
   for (group of fridayMessages) {
+    // Если это альбом, то отправить альбом ...
     if (group.length > 1) {
       try {
         await telegram.sendMediaGroup(chatId, group, {
@@ -74,6 +25,7 @@ const friday = async ({ telegram, chatId }) => {
         console.error(e);
       }
     } else {
+      // Если это всего лишь одно фото, то отправить одно фото
       const [photo] = group;
       telegram.sendPhoto(
         chatId,
@@ -83,21 +35,7 @@ const friday = async ({ telegram, chatId }) => {
     }
     await delay();
   }
-  // Отправить по одной фото
-  // for (photo of friDay) {
-  //   try {
-  //     await telegram.sendPhoto(chatId, {
-  //       source: photo.content,
-  //       caption: photo.title,
-  //       disable_notification: true,
-  //     });
-  //     await delay(1234);
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
-
-  telegram.sendMessage(chatId, "Задача выполнена.");
+  return telegram.sendMessage(chatId, "Задача выполнена.");
 };
 
 module.exports = friday;

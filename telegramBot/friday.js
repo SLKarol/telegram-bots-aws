@@ -1,7 +1,6 @@
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
 
-const { isFriDay } = require("../lib/isFriDay");
 const getConnection = require("../lib/db");
 const commandParts = require("../lib/commandParts");
 
@@ -46,8 +45,7 @@ bot.on("message", async (ctx) => {
   // Обработка команды боту
   //--- Пятничная рассылка
   if (command === "friday") {
-    const todayFriday = await isFriDay();
-    return friday({ todayFriday, telegram: ctx.telegram, chatId, group: args });
+    return friday({ telegram: ctx.telegram, chatId });
   }
   //--- Подписка на пятницу
   if (command === "subscribe") {
