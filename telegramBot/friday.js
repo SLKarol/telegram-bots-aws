@@ -4,8 +4,9 @@ const { Telegraf } = require("telegraf");
 const { isFriDay } = require("../lib/isFriDay");
 const getConnection = require("../lib/db");
 const commandParts = require("../lib/commandParts");
+const { delay } = require("../lib/common");
+const getFridayContent = require("../lib/reddit");
 
-const friday = require("../commands/friday");
 const { helpFriday } = require("../commands/help");
 const start = require("../commands/start");
 const whoami = require("../commands/whoami");
@@ -47,7 +48,47 @@ bot.on("message", async (ctx) => {
   //--- Пятничная рассылка
   if (command === "friday") {
     const todayFriday = await isFriDay();
-    return friday({ todayFriday, telegram: ctx.telegram, chatId, group: args });
+    // Надпись о начале работы
+    await ctx.telegram.sendMessage(
+      chatId,
+      "Готовятся материалы для публикации в этом чате."
+    );
+    try {
+      // Получить массив сообщений для пятничного контента
+      const fridayMessages = await getFridayContent({
+        todayFriday,
+        group: args,
+      });
+      for (group of fridayMessages) {
+        // Если это альбом, то отправить альбом ...
+        if (group.length > 1) {
+          try {
+            await ctx.telegram.sendMediaGroup(chatId, group, {
+              disable_notification: true,
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
+          // Если это всего лишь одно фото, то отправить одно фото
+          const [photo] = group;
+          ctx.telegram.sendPhoto(
+            chatId,
+            { url: photo.url },
+            { caption: photo.title, disable_notification: true }
+          );
+        }
+        await delay();
+      }
+      return ctx.telegram.sendMessage(chatId, "Задача выполнена.");
+    } catch (error) {
+      console.error(error);
+      return ctx.telegram.sendMessage(
+        chatId,
+        "Увы, произошла ошибка доступа к контенту."
+      );
+      return error;
+    }
   }
   //--- Подписка на пятницу
   if (command === "subscribe") {
