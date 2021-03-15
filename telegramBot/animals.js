@@ -12,9 +12,15 @@ const help = require("../commands/help");
 const start = require("../commands/start");
 const whoami = require("../commands/whoami");
 
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN, {
-  webhookReply: process.env.NODE_ENV === "development" ? false : true,
-});
+const bot = new Telegraf(
+  process.env.NODE_ENV !== "development"
+    ? process.env.TELEGRAM_TOKEN
+    : process.env.TELEGRAM_TOKEN_DEV,
+  {
+    webhookReply: process.env.NODE_ENV !== "development",
+    telegram: { webhookReply: process.env.NODE_ENV !== "development" },
+  }
+);
 
 bot.start(start);
 bot.help(help);
