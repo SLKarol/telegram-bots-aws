@@ -9,4 +9,4 @@ jobs:
       - name: Call our API route
         run: |
           curl --request GET \
-          --url 'hhttps://nsfw-telegram-bot.vercel.app/api/sendContent'
+          --url 'https://nsfw-telegram-bot.vercel.app/api/sendContent'
